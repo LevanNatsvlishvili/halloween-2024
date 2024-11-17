@@ -4,10 +4,10 @@ import { Timer } from 'three/addons/misc/Timer.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import GUI from 'lil-gui';
+// import GUI from 'lil-gui';
 
 // Debug
-const gui = new GUI();
+// const gui = new GUI();
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
@@ -171,7 +171,7 @@ scene.add(roof);
 roof.position.y = houseBase.geometry.parameters.height + roof.geometry.parameters.height / 2;
 roof.rotation.y = Math.PI / 4;
 
-const doorColorTexture = textureLoader.load('./door/Metal_Gate_002_basecolor_1k.jpg');
+const doorColorTexture = textureLoader.load('./door/Metal_Gate_002_basecolor.jpg');
 const doorAoTexture = textureLoader.load('./door/Metal_Gate_002_ambientOcclusion.jpg');
 const doorNormalTexture = textureLoader.load('./door/Metal_Gate_002_normal.jpg');
 const doorDisplacementTexture = textureLoader.load('./door/Metal_Gate_002_displacement.png');
