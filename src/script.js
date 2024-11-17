@@ -4,6 +4,7 @@ import { Timer } from 'three/addons/misc/Timer.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import GUI from 'lil-gui';
+import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 
 // Debug
 const gui = new GUI();
@@ -16,7 +17,7 @@ const gltfLoader = new GLTFLoader(loadingManager);
 
 gltfLoader.load('./tree/tree.glb', (glb) => {
   const tree = glb.scene;
-  tree.position.set(5, 0, 6);
+  tree.position.set(5, 0, 4.1);
   tree.scale.set(0.015, 0.015, 0.015);
   tree.rotation.y = Math.PI / 4;
   gui.add(tree.position, 'x').min(-10).max(10).step(0.001).name('Tree X');
@@ -32,8 +33,8 @@ gltfLoader.load('./tree/tree.glb', (glb) => {
 
 gltfLoader.load('./tree/ancient_tree.glb', (glb) => {
   const tree = glb.scene;
-  tree.position.set(-5, 0, 6);
-  tree.scale.set(0.01, 0.01, 0.01);
+  tree.position.set(-5, 0, 4.3);
+  tree.scale.set(0.007, 0.01, 0.01);
   tree.rotation.y = Math.PI / 4;
   gui.add(tree.position, 'x').min(-10).max(10).step(0.001).name('Tree 2 X');
   gui.add(tree.position, 'y').min(-10).max(10).step(0.001).name('Tree 2 Y');
@@ -61,10 +62,8 @@ sky.material.uniforms.sunPosition.value.set(0.3, -0.038, -0.95);
 scene.add(sky);
 
 // Fog
-// scene.fog = new THREE.FogExp2('#262837', 0.4);
+scene.fog = new THREE.FogExp2('#262837', 0.3);
 
-// scene.fog = new THREE.Fog('red', 1, 15);
-// scene.fog = new THREE.Fog('#262837', 1, 15);
 const textureLoader = new THREE.TextureLoader();
 
 // Floor
@@ -110,11 +109,7 @@ const floor = new THREE.Mesh(
 );
 gui.add(floor.material, 'displacementScale').min(0).max(1).step(0.001).name('Displacement scale');
 gui.add(floor.material, 'displacementBias').min(-1).max(1).step(0.001).name('Displacement Bias');
-const floorHelper = new THREE.GridHelper(20, 20, '#888888', '#888888');
-scene.add(
-  floor
-  // floorHelper
-);
+scene.add(floor);
 floor.rotation.x = -Math.PI / 2;
 
 const wallsColorTexture = textureLoader.load('./walls/textures/castle_brick_broken_06_diff_1k.jpg');
@@ -127,8 +122,12 @@ wallsColorTexture.colorSpace = THREE.SRGBColorSpace;
 const house = new THREE.Group();
 scene.add(house);
 
+const params = {
+  width: 4,
+  height: 6,
+};
 const houseBase = new THREE.Mesh(
-  new THREE.BoxGeometry(4, 2.5, 4),
+  new THREE.BoxGeometry(params.width, params.height, 4),
   new THREE.MeshStandardMaterial({
     color: 'black',
     roughness: 0.9,
@@ -145,6 +144,10 @@ const houseBase = new THREE.Mesh(
 gui.add(houseBase.material, 'displacementScale').min(0).max(1).step(0.001).name('Displacement scale');
 gui.add(houseBase.material, 'displacementBias').min(-1).max(1).step(0.001).name('Displacement Bias');
 gui.add(houseBase.material, 'roughness').min(-1).max(1).step(0.001).name('roughness');
+
+// gui.add(params, 'width', 1, 10).step(1).name('Width').onChange(updateGeometry);
+// gui.add(params, 'height', 1, 10).step(1).name('Height').onChange(updateGeometry);
+
 house.add(houseBase);
 houseBase.position.y = houseBase.geometry.parameters.height / 2;
 
@@ -199,9 +202,9 @@ const doorMetalicTexture = textureLoader.load('./door/Metal_Gate_002_metalic.jpg
 doorColorTexture.colorSpace = THREE.SRGBColorSpace;
 
 const door = new THREE.Mesh(
-  new THREE.PlaneGeometry(1.2, 2.2, 100, 100), // Increase segment count for smoother displacement
+  new THREE.PlaneGeometry(1.2, 2.2, 10, 10), // Increase segment count for smoother displacement
   new THREE.MeshStandardMaterial({
-    wireframe: false, // Turn off wireframe for a more realistic look
+    // wireframe: true, // Turn off wireframe for a more realistic look
     map: doorColorTexture,
     normalMap: doorNormalTexture,
     alphaMap: doorColorTexture,
@@ -209,11 +212,58 @@ const door = new THREE.Mesh(
     roughnessMap: doorRoughnessTexture,
     metalnessMap: doorMetalicTexture,
     displacementMap: doorDisplacementTexture,
+    displacementScale: 0.03,
+    displacementBias: -0.0003,
   })
 );
+
+const doorLight = new THREE.PointLight('#ff7d46', 5);
+doorLight.position.set(-0.5, 2.5, 2.5);
+doorLight.rotation.y = Math.PI;
+gui.add(doorLight.position, 'x').min(-1).max(1).step(0.001).name('Door Light X');
+gui.add(doorLight.position, 'y').min(-1).max(4).step(0.001).name('Door Light Y');
+gui.add(doorLight.position, 'z').min(-1).max(4).step(0.001).name('Door Light Z');
+
+scene.add(doorLight);
+
 house.add(door);
 door.position.y = door.geometry.parameters.height / 2;
 door.position.z = houseBase.geometry.parameters.width / 2 + 0.01;
+door.position.x = -0.5;
+
+const windowSizes = {
+  width: 1,
+  height: 0.75,
+};
+const houseWindow = new THREE.Mesh(
+  new THREE.PlaneGeometry(windowSizes.width, windowSizes.height, 10, 10), // Increase segment count for smoother displacement
+  new THREE.MeshStandardMaterial({
+    color: '#ff7d46',
+  })
+);
+
+house.add(houseWindow);
+houseWindow.position.y = houseBase.geometry.parameters.height - 1;
+houseWindow.position.z = houseBase.geometry.parameters.width / 2 + 0.01;
+
+// Window light
+const windowLight = new THREE.RectAreaLight('#ff7d46', 6, windowSizes.width, windowSizes.height);
+windowLight.position.y = houseBase.geometry.parameters.height - 1;
+windowLight.position.z = houseBase.geometry.parameters.width / 2 + 0.02;
+// windowLight.rotation.y = Math.PI;
+// windowLight.intensity = 8;
+
+gui.add(windowLight.position, 'x').min(-1).max(1).step(0.001).name('Window Light X');
+gui.add(windowLight.position, 'y').min(-1).max(4).step(0.001).name('Window Light Y');
+gui.add(windowLight.position, 'z').min(-1).max(4).step(0.001).name('Window Light Z');
+gui.add(windowLight, 'intensity').min(0).max(10).step(0.001).name('Window Light Intensity');
+gui.add(windowLight.rotation, 'x').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation X');
+gui.add(windowLight.rotation, 'y').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation Y');
+gui.add(windowLight.rotation, 'z').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation Z');
+
+scene.add(windowLight);
+// const helper = new RectAreaLightHelper(windowLight);
+// windowLight.add(helper);
 
 // Import pumpkins
 gltfLoader.load('./pumpkin/halloween_pumpkin.glb', (glb) => {
@@ -222,6 +272,17 @@ gltfLoader.load('./pumpkin/halloween_pumpkin.glb', (glb) => {
   pumpkin.scale.setScalar(0.003);
   pumpkin.position.set(1.4, 0.1, 2.4);
   pumpkin.rotation.y = -0.35;
+
+  pumpkin.traverse((child) => {
+    if (child.isMesh) {
+      const material = child.material;
+      if (material) {
+        material.emissive = new THREE.Color('orange'); // Set emissive color
+        material.emissiveIntensity = 30; // Adjust glow intensity
+      }
+    }
+  });
+
   scene.add(pumpkin);
 });
 
@@ -258,16 +319,12 @@ for (let i = 0; i <= 30; i++) {
   grave.rotation.z = (Math.random() - 0.5) * 0.4;
   grave.rotation.y = (Math.random() - 0.5) * 0.4;
 
-  gui.add(grave.position, 'x').min(-10).max(10).step(0.001).name('Grave X');
-  gui.add(grave.position, 'y').min(-10).max(10).step(0.001).name('Grave Y');
-  gui.add(grave.position, 'z').min(-10).max(10).step(0.001).name('Grave Z');
+  // gui.add(grave.position, 'x').min(-10).max(10).step(0.001).name('Grave X');
+  // gui.add(grave.position, 'y').min(-10).max(10).step(0.001).name('Grave Y');
+  // gui.add(grave.position, 'z').min(-10).max(10).step(0.001).name('Grave Z');
 
   graves.add(grave);
 }
-
-//
-//
-//
 
 // Ambient light
 const ambientLight = new THREE.AmbientLight('#86cdff', 0.275);
@@ -293,22 +350,53 @@ gui.add(directionalLight.position, 'y').min(-10).max(10).step(0.001).name('Light
 gui.add(directionalLight.position, 'z').min(-10).max(10).step(0.001).name('Light Z');
 scene.add(directionalLight);
 
-const ghost1 = new THREE.PointLight('#8800ff', 15);
-const ghost2 = new THREE.PointLight('#ff00ff', 15);
-const ghost3 = new THREE.PointLight('#ff0000', 15);
-scene.add(ghost1, ghost2, ghost3);
+// Ghosts
 
-ghost1.shadow.mapSize.width = 256;
-ghost1.shadow.mapSize.height = 256;
-ghost1.shadow.camera.far = 10;
+let ghost1 = null;
+let ghost2 = null;
+let ghost3 = null;
+gltfLoader.load('./ghost/ghost.glb', (gltf) => {
+  const ghost = gltf.scene;
+  // ghost1.scale.setScalar(0.4);
+  ghost.scale.set(0.4, 0.25, 0.5);
+  ghost.rotation.y = Math.PI / -2;
 
-ghost2.shadow.mapSize.width = 256;
-ghost2.shadow.mapSize.height = 256;
-ghost2.shadow.camera.far = 10;
+  ghost1 = ghost.clone();
+  ghost2 = ghost.clone();
+  ghost3 = ghost.clone();
 
-ghost3.shadow.mapSize.width = 256;
-ghost3.shadow.mapSize.height = 256;
-ghost3.shadow.camera.far = 10;
+  // ghost1.position.set(0, 0, 5);
+  // ghost1.rotation.y = Math.PI / -2;
+  const ghostColors = [
+    { model: ghost1, color: '#8800ff' },
+    { model: ghost2, color: '#ff00ff' },
+    { model: ghost3, color: '#ff0000' },
+  ];
+
+  const ghostLight = new THREE.PointLight('blue', 15);
+  ghostLight.shadow.mapSize.width = 256;
+  ghostLight.shadow.mapSize.height = 256;
+  ghostLight.shadow.camera.far = 10;
+  ghostLight.castShadow = true;
+
+  ghostColors.forEach((ghostModel) => {
+    ghostModel.model.traverse((child) => {
+      if (child.isMesh) {
+        // Clone the material to create unique material instances
+        child.material = child.material.clone();
+
+        // Set the emissive color for each unique material
+        child.material.emissive = new THREE.Color(ghostModel.color);
+        child.material.emissiveIntensity = 0.8;
+
+        child.material.transparent = true;
+        child.material.opacity = 0.3;
+      }
+    });
+  });
+
+  scene.add(ghost1, ghost2, ghost3);
+});
 
 const sizes = {
   width: window.innerWidth,
@@ -354,9 +442,9 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 directionalLight.castShadow = true;
-ghost1.castShadow = true;
-ghost2.castShadow = true;
-ghost3.castShadow = true;
+// ghost1.castShadow = true;
+// ghost2.castShadow = true;
+// ghost3.castShadow = true;
 
 houseBase.receiveShadow = true;
 floor.receiveShadow = true;
@@ -373,21 +461,58 @@ const timer = new Timer();
 const tick = () => {
   // Timer
   timer.update();
-  const ghost1Angle = timer.getElapsed() * -0.5;
-  ghost1.position.x = Math.sin(ghost1Angle) * 6;
-  ghost1.position.z = Math.cos(ghost1Angle) * 6;
-  ghost1.position.y = Math.sin(ghost1Angle) * Math.sin(ghost1Angle * 2.34) * Math.sin(ghost1Angle * 2.34);
+  if (ghost1) {
+    const ghost1Angle = timer.getElapsed() * -0.15;
+    // Update position
+    const newX = Math.sin(ghost1Angle) * 6;
+    const newZ = Math.cos(ghost1Angle) * 6;
+    const newY = Math.sin(ghost1Angle) * Math.sin(ghost1Angle * 2.34) * Math.sin(ghost1Angle * 2.34);
 
-  const ghost2Angle = timer.getElapsed() * 0.38;
-  ghost2.position.x = Math.sin(ghost2Angle) * 4;
-  ghost2.position.z = Math.cos(ghost2Angle) * 4;
-  ghost2.position.y = Math.sin(ghost2Angle) * Math.sin(ghost2Angle * 2.34) * Math.sin(ghost2Angle * 2.34);
+    ghost1.position.set(newX, newY, newZ);
 
-  const ghost3Angle = timer.getElapsed() * -0.23;
-  ghost3.position.x = Math.sin(ghost3Angle) * 8;
-  ghost3.position.z = Math.cos(ghost3Angle) * 8;
-  ghost3.position.y = Math.sin(ghost3Angle) * Math.sin(ghost3Angle * 0.34) * Math.sin(ghost3Angle * 0.34);
+    // Make the ghost look at its next position
+    const targetPosition = new THREE.Vector3(
+      Math.sin(ghost1Angle - 0.01) * 6, // Small offset to calculate the direction
+      Math.sin(ghost1Angle - 0.01) * Math.sin((ghost1Angle + 0.01) * 2.34) * Math.sin((ghost1Angle + 0.01) * 2.34),
+      Math.cos(ghost1Angle - 0.01) * 6
+    );
 
+    ghost1.lookAt(targetPosition);
+  }
+
+  if (ghost2) {
+    const ghost2Angle = timer.getElapsed() * 0.18;
+    const newX = Math.sin(ghost2Angle) * 4;
+    const newZ = Math.cos(ghost2Angle) * 4;
+    const newY = Math.sin(ghost2Angle) * Math.sin(ghost2Angle * 2.34) * Math.sin(ghost2Angle * 2.34);
+
+    ghost2.position.set(newX, newY, newZ);
+
+    const targetPosition = new THREE.Vector3(
+      Math.sin(ghost2Angle + 0.01) * 4, // Small offset to calculate the direction
+      Math.sin(ghost2Angle + 0.01) * Math.sin((ghost2Angle + 0.01) * 2.34) * Math.sin((ghost2Angle + 0.01) * 2.34),
+      Math.cos(ghost2Angle + 0.01) * 4
+    );
+
+    ghost2.lookAt(targetPosition);
+  }
+  if (ghost3) {
+    const ghost3Angle = timer.getElapsed() * 0.08;
+
+    const newX = Math.sin(ghost3Angle) * 8;
+    const newZ = Math.cos(ghost3Angle) * 8;
+    const newY = Math.sin(ghost3Angle) * Math.sin(ghost3Angle * 2.34) * Math.sin(ghost3Angle * 2.34);
+
+    ghost3.position.set(newX, newY, newZ);
+
+    const targetPosition = new THREE.Vector3(
+      Math.sin(ghost3Angle + 0.01) * 8, // Small offset to calculate the direction
+      Math.sin(ghost3Angle + 0.01) * Math.sin((ghost3Angle + 0.01) * 2.34) * Math.sin((ghost3Angle + 0.01) * 2.34),
+      Math.cos(ghost3Angle + 0.01) * 8
+    );
+
+    ghost3.lookAt(targetPosition);
+  }
   // Update controls
   controls.update();
 
