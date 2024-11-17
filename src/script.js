@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Timer } from 'three/addons/misc/Timer.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import GUI from 'lil-gui';
-import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 
 // Debug
 const gui = new GUI();
@@ -14,19 +14,18 @@ const canvas = document.querySelector('canvas.webgl');
 
 const loadingManager = new THREE.LoadingManager();
 const gltfLoader = new GLTFLoader(loadingManager);
+const dracoLoader = new DRACOLoader();
+
+// Set the path to the Draco decoder (usually in node_modules or a CDN)
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+dracoLoader.setDecoderConfig({ type: 'js' });
+gltfLoader.setDRACOLoader(dracoLoader);
 
 gltfLoader.load('./tree/tree.glb', (glb) => {
   const tree = glb.scene;
   tree.position.set(5, 0, 4.1);
   tree.scale.set(0.015, 0.015, 0.015);
   tree.rotation.y = Math.PI / 4;
-  gui.add(tree.position, 'x').min(-10).max(10).step(0.001).name('Tree X');
-  gui.add(tree.position, 'y').min(-10).max(10).step(0.001).name('Tree Y');
-  gui.add(tree.position, 'z').min(-10).max(10).step(0.001).name('Tree Z');
-  gui.add(tree.scale, 'x').min(0).max(10).step(0.001).name('Tree Scale X');
-  gui.add(tree.scale, 'y').min(0).max(10).step(0.001).name('Tree Scale Y');
-  gui.add(tree.scale, 'z').min(0).max(10).step(0.001).name('Tree Scale Z');
-  gui.add(tree.rotation, 'y').min(-Math.PI).max(Math.PI).step(0.001).name('Tree Rotation Y');
 
   scene.add(tree);
 });
@@ -36,19 +35,14 @@ gltfLoader.load('./tree/ancient_tree.glb', (glb) => {
   tree.position.set(-5, 0, 4.3);
   tree.scale.set(0.007, 0.01, 0.01);
   tree.rotation.y = Math.PI / 4;
-  gui.add(tree.position, 'x').min(-10).max(10).step(0.001).name('Tree 2 X');
-  gui.add(tree.position, 'y').min(-10).max(10).step(0.001).name('Tree 2 Y');
-  gui.add(tree.position, 'z').min(-10).max(10).step(0.001).name('Tree 2 Z');
-  gui.add(tree.scale, 'x').min(0).max(10).step(0.001).name('Tree 2 Scale X');
-  gui.add(tree.scale, 'y').min(0).max(10).step(0.001).name('Tree 2 Scale Y');
-  gui.add(tree.scale, 'z').min(0).max(10).step(0.001).name('Tree 2 Scale Z');
-  gui.add(tree.rotation, 'y').min(-Math.PI).max(Math.PI).step(0.001).name('Tree 2 Rotation Y');
 
   scene.add(tree);
 });
 
 // Scene
 const scene = new THREE.Scene();
+
+// Moon
 
 const sky = new Sky();
 sky.scale.setScalar(40);
@@ -62,7 +56,7 @@ sky.material.uniforms.sunPosition.value.set(0.3, -0.038, -0.95);
 scene.add(sky);
 
 // Fog
-scene.fog = new THREE.FogExp2('#262837', 0.3);
+scene.fog = new THREE.FogExp2('#262837', 0.25);
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -107,8 +101,6 @@ const floor = new THREE.Mesh(
     displacementBias: -0.25,
   })
 );
-gui.add(floor.material, 'displacementScale').min(0).max(1).step(0.001).name('Displacement scale');
-gui.add(floor.material, 'displacementBias').min(-1).max(1).step(0.001).name('Displacement Bias');
 scene.add(floor);
 floor.rotation.x = -Math.PI / 2;
 
@@ -141,13 +133,6 @@ const houseBase = new THREE.Mesh(
   })
 );
 
-gui.add(houseBase.material, 'displacementScale').min(0).max(1).step(0.001).name('Displacement scale');
-gui.add(houseBase.material, 'displacementBias').min(-1).max(1).step(0.001).name('Displacement Bias');
-gui.add(houseBase.material, 'roughness').min(-1).max(1).step(0.001).name('roughness');
-
-// gui.add(params, 'width', 1, 10).step(1).name('Width').onChange(updateGeometry);
-// gui.add(params, 'height', 1, 10).step(1).name('Height').onChange(updateGeometry);
-
 house.add(houseBase);
 houseBase.position.y = houseBase.geometry.parameters.height / 2;
 
@@ -171,10 +156,6 @@ roofNormalTexture.repeat.set(10, 2);
 roofColorTexture.rotation = -Math.PI / 26;
 roofARMTexture.rotation = -Math.PI / 26;
 roofNormalTexture.rotation = -Math.PI / 26;
-
-gui.add(roofColorTexture.repeat, 'x').min(0).max(10).step(0.001).name('x');
-gui.add(roofColorTexture.repeat, 'y').min(0).max(10).step(0.001).name('y');
-gui.add(roofColorTexture, 'rotation').min(0).max(10).step(0.001).name('rotation');
 
 // Create Roof Mesh with Material
 const roof = new THREE.Mesh(
@@ -220,9 +201,6 @@ const door = new THREE.Mesh(
 const doorLight = new THREE.PointLight('#ff7d46', 5);
 doorLight.position.set(-0.5, 2.5, 2.5);
 doorLight.rotation.y = Math.PI;
-gui.add(doorLight.position, 'x').min(-1).max(1).step(0.001).name('Door Light X');
-gui.add(doorLight.position, 'y').min(-1).max(4).step(0.001).name('Door Light Y');
-gui.add(doorLight.position, 'z').min(-1).max(4).step(0.001).name('Door Light Z');
 
 scene.add(doorLight);
 
@@ -236,7 +214,7 @@ const windowSizes = {
   height: 0.75,
 };
 const houseWindow = new THREE.Mesh(
-  new THREE.PlaneGeometry(windowSizes.width, windowSizes.height, 10, 10), // Increase segment count for smoother displacement
+  new THREE.PlaneGeometry(windowSizes.width, windowSizes.height, 50, 50), // Increase segment count for smoother displacement
   new THREE.MeshStandardMaterial({
     color: '#ff7d46',
   })
@@ -250,20 +228,8 @@ houseWindow.position.z = houseBase.geometry.parameters.width / 2 + 0.01;
 const windowLight = new THREE.RectAreaLight('#ff7d46', 6, windowSizes.width, windowSizes.height);
 windowLight.position.y = houseBase.geometry.parameters.height - 1;
 windowLight.position.z = houseBase.geometry.parameters.width / 2 + 0.02;
-// windowLight.rotation.y = Math.PI;
-// windowLight.intensity = 8;
-
-gui.add(windowLight.position, 'x').min(-1).max(1).step(0.001).name('Window Light X');
-gui.add(windowLight.position, 'y').min(-1).max(4).step(0.001).name('Window Light Y');
-gui.add(windowLight.position, 'z').min(-1).max(4).step(0.001).name('Window Light Z');
-gui.add(windowLight, 'intensity').min(0).max(10).step(0.001).name('Window Light Intensity');
-gui.add(windowLight.rotation, 'x').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation X');
-gui.add(windowLight.rotation, 'y').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation Y');
-gui.add(windowLight.rotation, 'z').min(-Math.PI).max(Math.PI).step(0.001).name('Window Light Rotation Z');
 
 scene.add(windowLight);
-// const helper = new RectAreaLightHelper(windowLight);
-// windowLight.add(helper);
 
 // Import pumpkins
 gltfLoader.load('./pumpkin/halloween_pumpkin.glb', (glb) => {
@@ -319,10 +285,6 @@ for (let i = 0; i <= 30; i++) {
   grave.rotation.z = (Math.random() - 0.5) * 0.4;
   grave.rotation.y = (Math.random() - 0.5) * 0.4;
 
-  // gui.add(grave.position, 'x').min(-10).max(10).step(0.001).name('Grave X');
-  // gui.add(grave.position, 'y').min(-10).max(10).step(0.001).name('Grave Y');
-  // gui.add(grave.position, 'z').min(-10).max(10).step(0.001).name('Grave Z');
-
   graves.add(grave);
 }
 
@@ -344,10 +306,6 @@ directionalLight.shadow.camera.left = -8;
 directionalLight.shadow.camera.near = 1;
 directionalLight.shadow.camera.far = 15;
 
-gui.add(directionalLight, 'intensity').min(0).max(10).step(0.001).name('Light intensity');
-gui.add(directionalLight.position, 'x').min(-10).max(10).step(0.001).name('Light X');
-gui.add(directionalLight.position, 'y').min(-10).max(10).step(0.001).name('Light Y');
-gui.add(directionalLight.position, 'z').min(-10).max(10).step(0.001).name('Light Z');
 scene.add(directionalLight);
 
 // Ghosts
@@ -355,7 +313,7 @@ scene.add(directionalLight);
 let ghost1 = null;
 let ghost2 = null;
 let ghost3 = null;
-gltfLoader.load('./ghost/ghost.glb', (gltf) => {
+gltfLoader.load('./ghost/ghost_2.glb', (gltf) => {
   const ghost = gltf.scene;
   // ghost1.scale.setScalar(0.4);
   ghost.scale.set(0.4, 0.25, 0.5);
@@ -422,9 +380,7 @@ const camera = new THREE.PerspectiveCamera(125, sizes.width / sizes.height, 0.1,
 camera.position.x = 0;
 camera.position.y = 3;
 camera.position.z = 8;
-gui.add(camera.position, 'x').min(-10).max(10).step(0.001).name('Camera X');
-gui.add(camera.position, 'y').min(-10).max(10).step(0.001).name('Camera Y');
-gui.add(camera.position, 'z').min(-10).max(10).step(0.001).name('Camera Z');
+
 scene.add(camera);
 
 // Controls
