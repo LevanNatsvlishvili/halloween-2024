@@ -107,7 +107,6 @@ floor.rotation.x = -Math.PI / 2;
 const wallsColorTexture = textureLoader.load('./walls/textures/castle_brick_broken_06_diff_1k.jpg');
 const wallsARMTexture = textureLoader.load('./walls/textures/castle_brick_broken_06_arm_1k.jpg');
 const wallsNormalTexture = textureLoader.load('./walls/textures/castle_brick_broken_06_nor_gl_1k.jpg');
-const wallsDisplacementTexture = textureLoader.load('./walls/textures/castle_brick_broken_06_disp_1k.jpg');
 
 wallsColorTexture.colorSpace = THREE.SRGBColorSpace;
 
@@ -128,8 +127,7 @@ const houseBase = new THREE.Mesh(
     normalMap: wallsNormalTexture,
     aoMap: wallsARMTexture,
     roughnessMap: wallsARMTexture,
-    metalnessMap: wallsDisplacementTexture,
-    displacementMap: wallsDisplacementTexture,
+    metalnessMap: wallsARMTexture,
   })
 );
 
@@ -173,12 +171,12 @@ scene.add(roof);
 roof.position.y = houseBase.geometry.parameters.height + roof.geometry.parameters.height / 2;
 roof.rotation.y = Math.PI / 4;
 
-const doorColorTexture = textureLoader.load('./door/Metal_Gate_002_diff_1k.jpg');
+const doorColorTexture = textureLoader.load('./door/Metal_Gate_002_basecolor_1k.jpg');
 const doorAoTexture = textureLoader.load('./door/Metal_Gate_002_ambientOcclusion.jpg');
 const doorNormalTexture = textureLoader.load('./door/Metal_Gate_002_normal.jpg');
 const doorDisplacementTexture = textureLoader.load('./door/Metal_Gate_002_displacement.png');
 const doorRoughnessTexture = textureLoader.load('./door/Metal_Gate_002_roughness.jpg');
-const doorMetalicTexture = textureLoader.load('./door/Metal_Gate_002_metalic.jpg');
+const doorMetalicTexture = textureLoader.load('./door/Metal_Gate_002_metallic.jpg');
 
 doorColorTexture.colorSpace = THREE.SRGBColorSpace;
 
