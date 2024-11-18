@@ -365,15 +365,11 @@ gltfLoader.load('./ghost/ghost_2.glb', (gltf) => {
         const newLight = ghostLight.clone();
         newLight.color = new THREE.Color(ghostModel.color);
         ghostModel.model.add(newLight);
-        if (newLight) {
-          console.log('ghost finished inside');
-        }
       }
     });
   });
 
   setTimeout(() => {
-    console.log('ghost finished async');
     loading.ghost = true;
   }, []);
   scene.add(ghost1, ghost2, ghost3);
