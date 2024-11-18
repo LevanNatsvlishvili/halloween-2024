@@ -449,62 +449,63 @@ const timer = new Timer();
 const tick = () => {
   if (loading.ghost && loading.pumpkin && loading.tree1 && loading.tree2) {
     loadingScreen.style.display = 'none';
+
+    // Timer
+    timer.update();
+    if (ghost1) {
+      const ghost1Angle = timer.getElapsed() * -0.15;
+      // Update position
+      const newX = Math.sin(ghost1Angle) * 6;
+      const newZ = Math.cos(ghost1Angle) * 6;
+      const newY = Math.sin(ghost1Angle) * Math.sin(ghost1Angle * 2.34) * Math.sin(ghost1Angle * 2.34);
+
+      ghost1.position.set(newX, newY, newZ);
+
+      // Make the ghost look at its next position
+      const targetPosition = new THREE.Vector3(
+        Math.sin(ghost1Angle - 0.01) * 6, // Small offset to calculate the direction
+        Math.sin(ghost1Angle - 0.01) * Math.sin((ghost1Angle + 0.01) * 2.34) * Math.sin((ghost1Angle + 0.01) * 2.34),
+        Math.cos(ghost1Angle - 0.01) * 6
+      );
+
+      ghost1.lookAt(targetPosition);
+    }
+
+    if (ghost2) {
+      const ghost2Angle = timer.getElapsed() * 0.18;
+      const newX = Math.sin(ghost2Angle) * 4;
+      const newZ = Math.cos(ghost2Angle) * 4;
+      const newY = Math.sin(ghost2Angle) * Math.sin(ghost2Angle * 2.34) * Math.sin(ghost2Angle * 2.34);
+
+      ghost2.position.set(newX, newY, newZ);
+
+      const targetPosition = new THREE.Vector3(
+        Math.sin(ghost2Angle + 0.01) * 4, // Small offset to calculate the direction
+        Math.sin(ghost2Angle + 0.01) * Math.sin((ghost2Angle + 0.01) * 2.34) * Math.sin((ghost2Angle + 0.01) * 2.34),
+        Math.cos(ghost2Angle + 0.01) * 4
+      );
+
+      ghost2.lookAt(targetPosition);
+    }
+    if (ghost3) {
+      const ghost3Angle = timer.getElapsed() * 0.08;
+
+      const newX = Math.sin(ghost3Angle) * 8;
+      const newZ = Math.cos(ghost3Angle) * 8;
+      const newY = Math.sin(ghost3Angle) * Math.sin(ghost3Angle * 2.34) * Math.sin(ghost3Angle * 2.34);
+
+      ghost3.position.set(newX, newY, newZ);
+
+      const targetPosition = new THREE.Vector3(
+        Math.sin(ghost3Angle + 0.01) * 8, // Small offset to calculate the direction
+        Math.sin(ghost3Angle + 0.01) * Math.sin((ghost3Angle + 0.01) * 2.34) * Math.sin((ghost3Angle + 0.01) * 2.34),
+        Math.cos(ghost3Angle + 0.01) * 8
+      );
+
+      ghost3.lookAt(targetPosition);
+    }
   }
 
-  // Timer
-  timer.update();
-  if (ghost1) {
-    const ghost1Angle = timer.getElapsed() * -0.15;
-    // Update position
-    const newX = Math.sin(ghost1Angle) * 6;
-    const newZ = Math.cos(ghost1Angle) * 6;
-    const newY = Math.sin(ghost1Angle) * Math.sin(ghost1Angle * 2.34) * Math.sin(ghost1Angle * 2.34);
-
-    ghost1.position.set(newX, newY, newZ);
-
-    // Make the ghost look at its next position
-    const targetPosition = new THREE.Vector3(
-      Math.sin(ghost1Angle - 0.01) * 6, // Small offset to calculate the direction
-      Math.sin(ghost1Angle - 0.01) * Math.sin((ghost1Angle + 0.01) * 2.34) * Math.sin((ghost1Angle + 0.01) * 2.34),
-      Math.cos(ghost1Angle - 0.01) * 6
-    );
-
-    ghost1.lookAt(targetPosition);
-  }
-
-  if (ghost2) {
-    const ghost2Angle = timer.getElapsed() * 0.18;
-    const newX = Math.sin(ghost2Angle) * 4;
-    const newZ = Math.cos(ghost2Angle) * 4;
-    const newY = Math.sin(ghost2Angle) * Math.sin(ghost2Angle * 2.34) * Math.sin(ghost2Angle * 2.34);
-
-    ghost2.position.set(newX, newY, newZ);
-
-    const targetPosition = new THREE.Vector3(
-      Math.sin(ghost2Angle + 0.01) * 4, // Small offset to calculate the direction
-      Math.sin(ghost2Angle + 0.01) * Math.sin((ghost2Angle + 0.01) * 2.34) * Math.sin((ghost2Angle + 0.01) * 2.34),
-      Math.cos(ghost2Angle + 0.01) * 4
-    );
-
-    ghost2.lookAt(targetPosition);
-  }
-  if (ghost3) {
-    const ghost3Angle = timer.getElapsed() * 0.08;
-
-    const newX = Math.sin(ghost3Angle) * 8;
-    const newZ = Math.cos(ghost3Angle) * 8;
-    const newY = Math.sin(ghost3Angle) * Math.sin(ghost3Angle * 2.34) * Math.sin(ghost3Angle * 2.34);
-
-    ghost3.position.set(newX, newY, newZ);
-
-    const targetPosition = new THREE.Vector3(
-      Math.sin(ghost3Angle + 0.01) * 8, // Small offset to calculate the direction
-      Math.sin(ghost3Angle + 0.01) * Math.sin((ghost3Angle + 0.01) * 2.34) * Math.sin((ghost3Angle + 0.01) * 2.34),
-      Math.cos(ghost3Angle + 0.01) * 8
-    );
-
-    ghost3.lookAt(targetPosition);
-  }
   camera.position.x = THREE.MathUtils.clamp(camera.position.x, planeBounds.minX, planeBounds.maxX);
   camera.position.y = THREE.MathUtils.clamp(camera.position.y, planeBounds.minY, Infinity); // Infinity allows upward movement
   camera.position.z = THREE.MathUtils.clamp(camera.position.z, planeBounds.minZ, planeBounds.maxZ);
