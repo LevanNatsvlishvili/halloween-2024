@@ -183,7 +183,8 @@ doorColorTexture.colorSpace = THREE.SRGBColorSpace;
 const door = new THREE.Mesh(
   new THREE.PlaneGeometry(1.2, 2.2, 10, 10), // Increase segment count for smoother displacement
   new THREE.MeshStandardMaterial({
-    // wireframe: true, // Turn off wireframe for a more realistic look
+    // wireframe: true, // Turn off wireframe for a more realistic look'
+    color: '#000',
     map: doorColorTexture,
     normalMap: doorNormalTexture,
     alphaMap: doorColorTexture,
@@ -379,11 +380,24 @@ camera.position.x = 0;
 camera.position.y = 3;
 camera.position.z = 8;
 
+const planeBounds = {
+  minX: -10, // Half of the plane's width
+  maxX: 10, // Half of the plane's width
+  minZ: -10, // Half of the plane's height
+  maxZ: 10, // Half of the plane's height
+  minY: 1, // Do not go below y = 0
+};
+
 scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+
+controls.maxPolarAngle = Math.PI / 2; // Prevent the camera from going below the plane
+controls.minPolarAngle = 0; // Prevent the camera from flipping upside down
+controls.maxDistance = 10; // Limit how far the camera can move away
+controls.minDistance = 5;
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -467,6 +481,10 @@ const tick = () => {
 
     ghost3.lookAt(targetPosition);
   }
+  camera.position.x = THREE.MathUtils.clamp(camera.position.x, planeBounds.minX, planeBounds.maxX);
+  camera.position.y = THREE.MathUtils.clamp(camera.position.y, planeBounds.minY, Infinity); // Infinity allows upward movement
+  camera.position.z = THREE.MathUtils.clamp(camera.position.z, planeBounds.minZ, planeBounds.maxZ);
+
   // Update controls
   controls.update();
 
