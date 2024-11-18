@@ -12,6 +12,14 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
 
+const loadingScreen = document.getElementById('loading-screen');
+const loading = {
+  ghost: false,
+  pumpkin: false,
+  tree1: false,
+  tree2: false,
+};
+
 const loadingManager = new THREE.LoadingManager();
 const gltfLoader = new GLTFLoader(loadingManager);
 const dracoLoader = new DRACOLoader();
@@ -27,6 +35,10 @@ gltfLoader.load('./tree/tree.glb', (glb) => {
   tree.scale.set(0.015, 0.015, 0.015);
   tree.rotation.y = Math.PI / 4;
 
+  setTimeout(() => {
+    loading.tree1 = true;
+  }, []);
+
   scene.add(tree);
 });
 
@@ -36,13 +48,14 @@ gltfLoader.load('./tree/ancient_tree.glb', (glb) => {
   tree.scale.set(0.007, 0.01, 0.01);
   tree.rotation.y = Math.PI / 4;
 
+  setTimeout(() => {
+    loading.tree2 = true;
+  }, []);
   scene.add(tree);
 });
 
 // Scene
 const scene = new THREE.Scene();
-
-// Moon
 
 const sky = new Sky();
 sky.scale.setScalar(40);
@@ -247,7 +260,9 @@ gltfLoader.load('./pumpkin/halloween_pumpkin.glb', (glb) => {
       }
     }
   });
-
+  setTimeout(() => {
+    loading.pumpkin = true;
+  }, []);
   scene.add(pumpkin);
 });
 
@@ -322,8 +337,6 @@ gltfLoader.load('./ghost/ghost_2.glb', (gltf) => {
   ghost2 = ghost.clone();
   ghost3 = ghost.clone();
 
-  // ghost1.position.set(0, 0, 5);
-  // ghost1.rotation.y = Math.PI / -2;
   const ghostColors = [
     { model: ghost1, color: '#8800ff' },
     { model: ghost2, color: '#ff00ff' },
@@ -350,11 +363,19 @@ gltfLoader.load('./ghost/ghost_2.glb', (gltf) => {
         child.material.opacity = 0.3;
 
         const newLight = ghostLight.clone();
+        newLight.color = new THREE.Color(ghostModel.color);
         ghostModel.model.add(newLight);
+        if (newLight) {
+          console.log('ghost finished inside');
+        }
       }
     });
   });
 
+  setTimeout(() => {
+    console.log('ghost finished async');
+    loading.ghost = true;
+  }, []);
   scene.add(ghost1, ghost2, ghost3);
 });
 
@@ -430,6 +451,10 @@ graves.children.forEach((grave) => {
 const timer = new Timer();
 
 const tick = () => {
+  if (loading.ghost && loading.pumpkin && loading.tree1 && loading.tree2) {
+    loadingScreen.style.display = 'none';
+  }
+
   // Timer
   timer.update();
   if (ghost1) {
